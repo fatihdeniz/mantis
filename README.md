@@ -1,7 +1,7 @@
 # Mantis: Detection of Zero-Day Malicious Domains Leveraging Low Reputed Hosting Infrastructure
 
 ## Overview
-Mantis is a tool designed to detect zero-day malicious domains by leveraging low-reputed hosting infrastructures. This approach combines the power of Graph Neural Networks (GNNs) with known features of malicious domains to identify suspicious domains in real-time.
+Mantis is a tool designed to detect zero-day malicious domains by leveraging low-reputed hosting infrastructures.  It utilizes a hybrid approach, combining network topology with hosting and lexical feature sets to enhance detection capabilities. By leveraging the power of Graph Neural Networks (GNNs), Mantis identifies malicious domains more effectively, offering a robust solution for proactive cybersecurity.
 
 ## Sample Data
 Sample nodes and edges data can be accessed from the following link:
@@ -9,7 +9,7 @@ Sample nodes and edges data can be accessed from the following link:
 
 ## Usage
 
-To use the Mantis detection system, follow the steps below:
+To train a model, follow the steps below:
 
 ### 1. Import Required Libraries
 
@@ -26,8 +26,8 @@ from src.score import roc, prec_recall, score
 - Model File: Define where the trained model will be saved (sage.pkl).
 
 ```python
-nodes_file = '/export/sec02/fatih/backup/mahmoud/fqdn_apex_nodes.csv'
-edges_file = '/export/sec02/fatih/backup/mahmoud/fqdn_apex_edges.csv'
+nodes_file = 'fqdn_apex_nodes.csv'
+edges_file = 'fqdn_apex_edges.csv'
 model_file = 'sage.pkl'
 ```
 
