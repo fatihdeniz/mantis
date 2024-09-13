@@ -44,6 +44,7 @@ args.gpu_id = 5
 ### 4. Load Data and Train Model
 Use the loader to load the nodes and edges data.
 You can initiate the training process using the SAGE_Experiment class.
+Use loader_hetero and sage_hetero for running experiments with heterogeneous graphs.
 
 ```python
 data_loader = loader.Loader(nodes_file, edges_file, feature_labels, args)
