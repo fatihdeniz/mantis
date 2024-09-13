@@ -7,7 +7,7 @@ sys.path.append('../')
 
 
 class Gcn(torch.nn.Module):
-    def __init__(self, num_features, dim=16, num_classes=1, num_layers=2, model_type='gcn'):
+    def __init__(self, num_features, dim=256, num_classes=2, num_layers=3, model_type='gcn'):
         super(Gcn, self).__init__()
 
         self.conv1 = SAGEConv(num_features, dim) if model_type == 'sage' else GCNConv(num_features, dim)
