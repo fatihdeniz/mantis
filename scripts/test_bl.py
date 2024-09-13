@@ -9,7 +9,7 @@ module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if module_path not in sys.path:
     sys.path.insert(0, module_path)
 
-from src.sage_experiment_20220326 import SAGE_Experiment
+from src.sage_experiment import SAGE_Experiment
 from src.features import feature_labels
 from src.loader import Loader
 from src.experiment_utils import pred_conf2 as pred_conf
