@@ -1,50 +1,42 @@
 import os
 import sys
 import torch
-from datetime import date, datetime
-from time import time
 
-import numpy
 import pandas as pd
-import matplotlib.pyplot as plt
 import importlib as imp
 
-import torch
 import torch_geometric
+
+# Print versions for debugging purposes
 print('Torch', torch.__version__)
 print("PyTorch Geometric Version:", torch_geometric.__version__)
 print("CUDA Version:", torch.version.cuda)
 
-import torch.nn.functional as F
-
+# Add the parent directory to the system path
 module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if module_path not in sys.path:
     sys.path.insert(0, module_path)
     
 from src import experiment_adv
 from src import loader
-
-imp.reload(experiment_adv)
-SAGE_Experiment=experiment_adv.SAGE_Experiment
-imp.reload(loader)
+SAGE_Experiment = experiment_adv.SAGE_Experiment
 Loader = loader.Loader
 
 from src.features import feature_labels
-from src.score  import roc, prec_recall, score
-from src import config_attack as config 
+from src import config_attack as config
 args1 = config.parse()
 
-sys.path.insert(0, '/export/sec02/fatih/Common')
-from lib_jupyter import notebook_util
-best_gpu = notebook_util.pick_gpu_lowest_memory()
-# args1.gpu_id = best_gpu
+# Select the GPU with the lowest memory usage
+from utils import gpu_util
+best_gpu = gpu_util.pick_gpu_lowest_memory()
+args1.gpu_id = best_gpu
 
-path='/export/blacklist-forecast/blacklist_forecast/'
-nodes_file_format = path +'graph_data/2022-{:02d}-01-2022-{:02d}-07_fqdn_apex_nodes.csv.log.norm' # pass month for this experiment
-edges_file_format = path +'graph_data/2022-{:02d}-01-2022-{:02d}-07_fqdn_apex_edges.csv'
+nodes_file = "../data/fqdn_apex_nodes.csv"
+edges_file = "../data/fqdn_apex_edges.csv"
 
-surrogate_model_file = "/export/sec02/fatih/paper_stats/data/attack/clean_2022-07-7_0.pkl" # month and experiment ID
-model_file_format = "/export/sec02/fatih/paper_stats/data/attack/adv_both_2022-07-{}_{}.pkl" # month and experiment ID
+surrogate_model_file = "../models/clean_surrogate.pkl" 
+model_file = "..models/test_adv.pkl" 
+args1.model_file = model_file
 
 result = []
 dates = [7]
@@ -55,12 +47,7 @@ curr = 7
 # k-fold tests 
 i = int(args1.epsilon*100)
 args1.experiment_id = i
-
 # args1.epsilon = clp
-nodes_file = nodes_file_format.format(curr, curr)
-edges_file = edges_file_format.format(curr, curr)
-model_file = model_file_format.format(curr, i)
-args1.model_file = model_file
 
 print('Arguments:', args1)
 loader = Loader(nodes_file, edges_file, feature_labels, args1)
@@ -92,4 +79,4 @@ result.append(advAccs)
 print('mintA', advAccs)
         
 result_df = pd.DataFrame(result)
-result_df.to_csv(f'/export/sec02/fatih/paper_stats/data/attack/adv_bothattack_{i}.csv', index=False)
+result_df.to_csv(f'../data/adv_bothattack_{i}.csv', index=False)

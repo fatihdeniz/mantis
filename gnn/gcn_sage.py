@@ -10,20 +10,29 @@ class Gcn(torch.nn.Module):
     def __init__(self, num_features, dim=256, num_classes=2, num_layers=3, model_type='gcn'):
         super(Gcn, self).__init__()
 
+        # Initialize the first convolution layer
         self.conv1 = SAGEConv(num_features, dim) if model_type == 'sage' else GCNConv(num_features, dim)
+        
+        # Initialize the subsequent convolution layers
         self.gcs = nn.ModuleList()
         self.num_layers = num_layers
         for i in range(1, num_layers):
             conv = SAGEConv(dim, dim) if model_type == 'sage' else GCNConv(dim, dim)
             self.gcs.append(conv)
+        
+        # Initialize the final linear layer
         self.conv2 = nn.Linear(dim, num_classes)
 
     def forward(self, x, edge_index, data=None, save_embedding=False):
         x = F.relu(self.conv1(x, edge_index))
         x = F.dropout(x, training=self.training)
+        
         for i in range(1, self.num_layers):
             x = F.relu(self.gcs[i-1](x, edge_index))
             x = F.dropout(x, training=self.training)
-        if save_embedding: return x
+        
+        if save_embedding:
+            return x
+        
         x = self.conv2(x)
-        return F.log_softmax(x, dim=-1) 
+        return F.log_softmax(x, dim=-1)
