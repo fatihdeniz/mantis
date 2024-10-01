@@ -1,16 +1,7 @@
 from cmath import nan
-import datetime
-import dgl
-import errno
 import numpy as np
-import os
-import pickle
 import random
 import torch
-
-from pprint import pprint
-from scipy import sparse
-from scipy import io as sio
 
 from sklearn.metrics import f1_score, roc_auc_score
 from sklearn.metrics import precision_score, recall_score, confusion_matrix
@@ -24,6 +15,13 @@ import numpy
 
 from sklearn.metrics import confusion_matrix, roc_curve, auc, ConfusionMatrixDisplay
 
+def score_batch(combined_pred, combined_target):
+    combined_pred = torch.cat(combined_pred, dim=0)
+    pred = combined_pred.argmax(dim=1)
+    combined_target = torch.cat(combined_target, dim=0)
+
+    return score(pred, combined_target)
+
 def roc(pred, labels):
     # keep probabilities for the positive outcome only
     lr_probs = pred[:, 1]
@@ -33,6 +31,13 @@ def roc(pred, labels):
     print('ROC AUC=%.3f' % (lr_auc))
     # calculate roc curves
     lr_fpr, lr_tpr, threshold = roc_curve(labels, lr_probs)
+    
+    # fpr, tpr, threshold = roc_curve(loader.data.y[mask], pred_raw[mask])
+    thr = threshold[np.argmax(lr_tpr-lr_fpr)]
+    print('Threshold', thr, np.max(lr_tpr-lr_fpr))
+    pred_opt = np.where(lr_probs>=thr,1,0)
+    print(score(pred_opt, labels))
+    
     # print(lr_fpr, lr_tpr, threshold)
     # plot the roc curve for the model
     pyplot.plot(lr_fpr, lr_tpr, marker='.', label='SAGE Homo 3-48')
@@ -71,13 +76,21 @@ def prec_recall(pred, labels):
     pyplot.show()
     return lr_auc
     
-def score(pred, labels, pred_raw=None):
+def score(pred, labels):
     # tp, fp, tn, fn = confusion(labels, pred)
     # print('tn, fp, fn, tp', tn, fp, fn, tp)
-    
-    labels = labels.cpu().numpy()
-    pred = pred.cpu().numpy()
-
+    try:
+        if type(labels) == numpy.ndarray:
+            labels = labels.astype(int)
+            pred = pred.astype(int)
+        elif type(labels) == list:
+            labels = np.array(labels)#.astype(int)
+            pred = np.array(pred)#.astype(int)
+        else:
+            labels = labels.cpu().numpy()
+            pred = pred.cpu().numpy()
+    except:
+        pass
     accuracy = (pred == labels).sum() / len(pred)
 
     try:
@@ -88,18 +101,14 @@ def score(pred, labels, pred_raw=None):
         print('Exception occurred while calculating F1 Score', labels, pred)
         f1 = nan
     try:
-        if pred_raw is not None:
-            auc = roc_auc_score(labels, pred_raw[:,1])
-        else:
-            auc = roc_auc_score(labels, pred)
-            
-    except Exception as e:
-        print("Exception during AUC score", repr(e))
+        auc = roc_auc_score(labels, pred)
+    except:
         auc = nan
 
     try:
         prec, recall = precision_score(labels, pred, zero_division=0), recall_score(labels,pred, zero_division=0)
-    except:
+    except Exception as e:
+        print(repr(e))
         prec,recall = nan,nan
 
     try:

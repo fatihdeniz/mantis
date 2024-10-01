@@ -130,8 +130,8 @@ def parse():
     )
     
     parser.add_argument('--label_source', 
-        default=['alexa', 'tranco', 'umbrella', 'crux', 'edugov', 'benign4',
-                'vt_seed5_3months', 'vt_active5_3months','vt_active5_12months', 'vt_seed5_12months'],
+        default=['popular', 'alexa', 'tranco', 'umbrella', 'edugov', 'benign4',
+                'vt_seed5_3months', 'vt_active5_3months','vt_active5_12months', 'vt_seed5_12months', 'vt_mixed'],
         help= 'label sources'
     )
     

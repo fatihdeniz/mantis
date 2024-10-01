@@ -1,12 +1,7 @@
 import torch
 import torch.nn.functional as F
-# from pyg_source.torch_geometric.loader import NeighborLoader
 from torch_geometric.loader import NeighborLoader
-# from torch_geometric.loader import NeighborLoader
-print('Fatih Debug')
 
-import sys
-import numpy as np
 from tqdm import tqdm, trange
 from src.score import score, score_batch
 import os.path as osp
@@ -29,7 +24,7 @@ class SAGE_Experiment(Experiment):
             return NeighborLoader(self.data,
                 num_neighbors=self.args.fanout,
                 # num_neighbors=[-1,25,10],
-                weight_attr= 'edge_weight' if self.args.weighted else 'None',
+                weight_attr= 'edge_weight' if self.args.weighted else None,
                 batch_size=self.batch_size,
                 input_nodes=initial_nodes, # It should be training and testing nodes
                 subgraph_type='induced')

@@ -182,4 +182,4 @@ def parse():
         help= 'for PGD attack'
     )
 
-    return parser.parse_args()
+    return parser.parse_args('')

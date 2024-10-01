@@ -7,32 +7,49 @@ sys.path.append('../')
 
 
 class Gcn(torch.nn.Module):
-    def __init__(self, num_features, dim=256, num_classes=2, num_layers=3, model_type='gcn'):
+    def __init__(self, num_features, dim=16, num_classes=1, num_layers=2, model_type='gcn', lstm=False):
         super(Gcn, self).__init__()
 
-        # Initialize the first convolution layer
         self.conv1 = SAGEConv(num_features, dim) if model_type == 'sage' else GCNConv(num_features, dim)
-        
-        # Initialize the subsequent convolution layers
         self.gcs = nn.ModuleList()
         self.num_layers = num_layers
+        self.lstm = lstm
         for i in range(1, num_layers):
             conv = SAGEConv(dim, dim) if model_type == 'sage' else GCNConv(dim, dim)
             self.gcs.append(conv)
-        
-        # Initialize the final linear layer
-        self.conv2 = nn.Linear(dim, num_classes)
+        if lstm:
+            self.conv2 = nn.Linear(num_layers * dim + num_features, num_classes)
+        else:
+            self.conv2 = nn.Linear(dim, num_classes)
+            
 
+    # def forward(self, x, edge_index, data=None, save_embedding=False):
+    #     x = F.relu(self.conv1(x, edge_index))
+    #     x = F.dropout(x, training=self.training)
+    #     for i in range(1, self.num_layers):
+    #         x = F.relu(self.gcs[i-1](x, edge_index))
+    #         x = F.dropout(x, training=self.training)
+    #     if save_embedding: return x
+    #     x = self.conv2(x)
+    #     return F.log_softmax(x, dim=-1) 
+    
     def forward(self, x, edge_index, data=None, save_embedding=False):
-        x = F.relu(self.conv1(x, edge_index))
-        x = F.dropout(x, training=self.training)
-        
+        conv1_x = F.relu(self.conv1(x, edge_index))
+        x_layers = [x, F.dropout(conv1_x, training=self.training)]
+
         for i in range(1, self.num_layers):
-            x = F.relu(self.gcs[i-1](x, edge_index))
-            x = F.dropout(x, training=self.training)
-        
+            x_layer = F.relu(self.gcs[i - 1](x_layers[i], edge_index))
+            x_layers.append(F.dropout(x_layer, training=self.training))
+
+        if self.lstm:
+            # x_layers.append(x)  # Moved to list init
+            x = torch.cat(x_layers, dim=-1)  # Concatenate along the feature dimension
+        else:
+            x = x_layers[-1]  # Use only the last layer's embedding
+
         if save_embedding:
             return x
-        
+
+        # print('Concat size', x.shape)
         x = self.conv2(x)
         return F.log_softmax(x, dim=-1)
