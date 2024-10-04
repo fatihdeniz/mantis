@@ -22,27 +22,16 @@ class Gcn(torch.nn.Module):
         else:
             self.conv2 = nn.Linear(dim, num_classes)
             
-
-    # def forward(self, x, edge_index, data=None, save_embedding=False):
-    #     x = F.relu(self.conv1(x, edge_index))
-    #     x = F.dropout(x, training=self.training)
-    #     for i in range(1, self.num_layers):
-    #         x = F.relu(self.gcs[i-1](x, edge_index))
-    #         x = F.dropout(x, training=self.training)
-    #     if save_embedding: return x
-    #     x = self.conv2(x)
-    #     return F.log_softmax(x, dim=-1) 
     
-    def forward(self, x, edge_index, data=None, save_embedding=False):
-        conv1_x = F.relu(self.conv1(x, edge_index))
+    def forward(self, x, edge_index, data=None, save_embedding=False, edge_weight=None):
+        conv1_x = F.relu(self.conv1(x, edge_index, edge_weight))
         x_layers = [x, F.dropout(conv1_x, training=self.training)]
 
         for i in range(1, self.num_layers):
-            x_layer = F.relu(self.gcs[i - 1](x_layers[i], edge_index))
+            x_layer = F.relu(self.gcs[i - 1](x_layers[i], edge_index, edge_weight))
             x_layers.append(F.dropout(x_layer, training=self.training))
 
         if self.lstm:
-            # x_layers.append(x)  # Moved to list init
             x = torch.cat(x_layers, dim=-1)  # Concatenate along the feature dimension
         else:
             x = x_layers[-1]  # Use only the last layer's embedding
@@ -50,6 +39,5 @@ class Gcn(torch.nn.Module):
         if save_embedding:
             return x
 
-        # print('Concat size', x.shape)
         x = self.conv2(x)
         return F.log_softmax(x, dim=-1)

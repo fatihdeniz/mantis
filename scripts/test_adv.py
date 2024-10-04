@@ -1,10 +1,10 @@
 import os
 import sys
-import torch
 
 import pandas as pd
 import importlib as imp
 
+import torch
 import torch_geometric
 
 # Print versions for debugging purposes
@@ -31,23 +31,20 @@ from utils import gpu_util
 best_gpu = gpu_util.pick_gpu_lowest_memory()
 args1.gpu_id = best_gpu
 
-nodes_file = "../data/fqdn_apex_nodes.csv"
-edges_file = "../data/fqdn_apex_edges.csv"
-
 surrogate_model_file = "../models/clean_surrogate.pkl" 
-model_file = "..models/test_adv.pkl" 
+
+nodes_file = "../data/test_fqdn_apex_nodes.csv"
+edges_file = "../data/test_fqdn_apex_edges.csv"
+model_file = "..models/[TRAINED_MODEL.pkl]" 
 args1.model_file = model_file
 
 result = []
 dates = [7]
 rate=0.01
 curr = 7
-# SET EPSILON
 
-# k-fold tests 
 i = int(args1.epsilon*100)
 args1.experiment_id = i
-# args1.epsilon = clp
 
 print('Arguments:', args1)
 loader = Loader(nodes_file, edges_file, feature_labels, args1)
