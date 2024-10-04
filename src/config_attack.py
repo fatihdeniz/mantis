@@ -178,8 +178,8 @@ def parse():
     
     parser.add_argument('--epsilon', 
         type=float, 
-        default=0.8,
-        help= 'for PGD attack'
+        default=0.0,
+        help= 'attack clp value'
     )
 
     return parser.parse_args()

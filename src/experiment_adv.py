@@ -9,7 +9,7 @@ from tqdm import trange
 from src.score import score
 from src.earlystopping import EarlyStopping
 
-from gnn.gcn_sage_attack import Gcn
+from gnn.gcn_sage import Gcn
 from src.experiment import Experiment
 
 class SAGE_Experiment(Experiment): 
