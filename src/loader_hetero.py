@@ -14,9 +14,6 @@ class HeteroLoader(Loader):
         args.hetero = True
         super(HeteroLoader, self).__init__(nodes_file, edges_file, feature_names['domain'], args)
         self.data = self.__prepare_hetero_data(feature_names, args)
-        # print(self.data)
-        # print(self.val_index_tensor)
-        # print(self.test_index_tensor)
         self.data['domain'].val_index_tensor = self.val_index_tensor
         self.data['domain'].test_index_tensor = self.test_index_tensor
 
@@ -34,7 +31,6 @@ class HeteroLoader(Loader):
         edge_index = []
         for i in range (5):
             edges = torch.tensor(self.edges_ind.loc[self.edges_ind['edge_type'] == i, ['source', 'target']].values.tolist(), dtype=torch.long).t().contiguous()
-            # print(edges.size())
             if edges.size()[0] == 0:
                 edges = torch.empty(2, 0, dtype=torch.long)
             edge_index.append(edges)
@@ -64,27 +60,14 @@ class HeteroLoader(Loader):
         # data['asn'].x = asn_features  # asn feature matrix
         # data['city'].x = city_features  # city feature matrix
 
-        # for edge_type in edge_index:
-        #     print(edge_type.size())
         # domains and ips are connected by an edge
         data['domain', 'to', 'ipp'].edge_index = edge_index[0]   # shape: [2, num_edges]
         data['ipp', 'to', 'subnet'].edge_index = edge_index[1]   # shape: [2, num_edges]
         
         data['domain', 'fqdnapex', 'domain'].edge_index = edge_index[2]   # shape: [2, num_edges]
-        # reverse_edges = edge_index[2].clone().flip(0)
-        # data['domain', 'fqdnapex', 'domain'].edge_index = torch.cat([edge_index[2], reverse_edges], dim=1)
-        
-        # temp_apexfqdn = edge_index[2].clone()
-        # temp_source = temp_apexfqdn[0].clone()
-        # temp_apexfqdn[0] = temp_apexfqdn[1]
-        # temp_apexfqdn[1] = temp_source
-        # data['domain', 'apexfqdn', 'domain'].edge_index = temp_apexfqdn   # shape: [2, num_edges]
-
         data['domain', 'similar_apex', 'domain'].edge_index = edge_index[3]   # shape: [2, num_edges]
         data['domain', 'similar_all', 'domain'].edge_index = edge_index[4]   # shape: [2, num_edges]
         
-
-        # print(data)
         # data['subnet', 'to', 'asn'].edge_index = edge_index[3]   # shape: [2, num_edges]
         # data['ipp', 'to', 'city'].edge_index = edge_index[2]   # shape: [2, num_edges]
         

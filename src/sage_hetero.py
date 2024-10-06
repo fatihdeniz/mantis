@@ -38,28 +38,33 @@ class Sage_Hetero(Experiment):
         return model.to(self.device)
 
     def train(self):
-        outer_batches = self.define_batch(self.data['domain'].validation_mask)
         model = self.__prepare_model(self.data)
-        data = self.data.to(self.device)
+        data = self.data.to(self.device)  # Use neighbor loader if batching needed
         optimizer = torch.optim.Adam(model.parameters(), lr=self.args.lr, weight_decay=self.args.weight_decay)
-        
+
         epoch_counter = trange(self.epoch)
         for epoch in epoch_counter:
             model.train()
             optimizer.zero_grad()
             current_loss = 0
-            for batch in outer_batches:
-                batch = batch.to(self.device)
-                out = model(batch.x_dict, batch.edge_index_dict)
-                loss = F.cross_entropy(out[batch['domain'].validation_mask], batch['domain'].y[batch['domain'].validation_mask])
-                current_loss += loss.item()
-                loss.backward()
+
+            data = data.to(self.device)
+            out = model(data.x_dict, data.edge_index_dict)  # Forward pass
+
+            # Compute the loss using the entire validation set (adjust mask as needed)
+            loss = F.cross_entropy(out[data['domain'].validation_mask], data['domain'].y[data['domain'].validation_mask])
+            current_loss += loss.item()
+
+            # Backward pass and optimization step
+            loss.backward()
             optimizer.step()
-            
-                
+
+            # Every 10 epochs, evaluate and print results
             if epoch % 10 == 0:
-                val_acc, test_acc = self.__test(model, data, istest=False), self.__test(model, data, istest=True)
-                epoch_counter.set_description(f'''Epoch: {epoch:03d}, Loss: {current_loss:.4f}, Train: {val_acc['acc']:.4f}, Val: {test_acc['acc']:.4f}''')
+                val_acc = self.__test(model, data, istest=False)
+                test_acc = self.__test(model, data, istest=True)
+                epoch_counter.set_description(f'''Epoch: {epoch:03d}, Loss: {current_loss:.4f}, Train: {val_acc['acc']:.4f}, Test: {test_acc['acc']:.4f}''')
+
         return model
     
     @torch.no_grad()
@@ -97,5 +102,4 @@ class Sage_Hetero(Experiment):
                                             raw_directory)
 
         return self.__test(modelLoaded, data_test, istest=True)
-#         return self.__test2(modelLoaded, data_test)
 
