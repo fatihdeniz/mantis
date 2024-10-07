@@ -23,9 +23,8 @@ class SAGE_Experiment(Experiment):
     def define_batch(self, initial_nodes):
         return NeighborLoader(self.data,
             num_neighbors=self.args.fanout,
-            # num_neighbors=[-1,25,10],
             batch_size=self.batch_size,
-            input_nodes=initial_nodes, # It should be training and testing nodes
+            input_nodes=initial_nodes, 
             subgraph_type='induced')
     
     def __prepare_model(self,data) :
@@ -258,9 +257,6 @@ class SAGE_Experiment(Experiment):
 
         return new_edge_index.t(), new_edge_type
 
-
-
-    
     def mimicIP(self, model, batch, mask, perturbation=0.10):
         x_data = batch.x
         batch.y = batch.y.to(x_data.device)
@@ -374,14 +370,6 @@ class SAGE_Experiment(Experiment):
         else:
             return torch.clamp(adj_changes.data, min=0, max=1)
     
-    def get_modified_adj(self, edge_weight):
-        adj = edge_weight
-        complementary = torch.ones_like(adj) - 2 * adj
-
-        modified_adj = complementary * adj_changes + adj
-
-        return modified_adj
-    
     def bisection(a: float, b: float, adj_changes: torch.Tensor, n_perturbations: int, epsilon: float):
         def func(x):
             return torch.clamp(adj_changes - x, 0, 1).sum() - n_perturbations
@@ -460,9 +448,6 @@ class SAGE_Experiment(Experiment):
                 print('Early stopping epoch:', epoch)
                 break
             
-            # if epoch % 100 == 0:
-            #     val_acc, test_acc = self.__test(model, data, data.validation_mask), self.__test(model, data, data.test_mask)
-            #     print(f'''Epoch: {epoch:03d}, Loss {loss:.4f}, Val: {val_acc['acc']:.4f}, Test: {test_acc['acc']:.4f}''')
         self.earlystop.load_checkpoint(model)
         return model
     
@@ -531,13 +516,3 @@ class SAGE_Experiment(Experiment):
 
         return score(pred, combined_target)
     
-    # def mimiciptest(self, model, data_test, mask, clp=0.05):
-    #     model.eval()
-    #     adv_x = self.getAdvX(model,data_test,mask, pdg_step=pdg_step,epsilon=epsilon,clipLmt=clipLmt)
-    #     adv_edge_weight = self.pgdEdge(model,data_test,mask, pdg_step=pdg_step,epsilon=epsilon,clipLmt=clipLmt, perturbation=perturbation)
-    #     with torch.no_grad():
-    #         pred_raw = model(adv_x, data_test.edge_index, adv_edge_weight)
-    #     pred = pred_raw.argmax(dim=1)
-    #     if getloss: 
-    #         return F.nll_loss(pred_raw[mask], data_test.y[mask]), score(pred[mask], data_test.y[mask])['acc']
-    #     return score(pred[mask], data_test.y[mask])

@@ -30,7 +30,6 @@ class Loader():
         if 'label' not in self.nodes_df.columns:
             self.nodes_df['label'] = 2
         
-        # if args.edge_type', False):
         self.edges_ind = self.edges_ind[self.edges_ind['edge_type'].isin(args.edge_type)]
         
         if args.hetero:
@@ -56,10 +55,7 @@ class Loader():
     def __prepare_data(self,feature_names,args):
         features = torch.tensor(self.nodes_df[feature_names].values.tolist(), dtype=torch.float)
         self.edge_index = torch.tensor(self.edges_ind.values.tolist(), dtype=torch.long).t().contiguous()
-        # if 'label' in self.nodes_df.columns:
         self.y = torch.tensor(list(self.nodes_df['label']), dtype = torch.long)
-        # else:
-        #     self.y = torch.full(self.nodes_df.shape[0], 2)
         data = Data(x=features, edge_index=self.edge_index, y=self.y)
         data.num_nodes = self.num_nodes
         data.n_id = torch.arange(self.num_nodes)
@@ -120,6 +116,7 @@ class Loader():
             
         if args.label_source is not None and args.popularity_lists:
             # print('Popularity LISTS')
+            # used for mimicip attack
             self.popular_ip_mask = torch.zeros(num_nodes, dtype=torch.bool)
             popular_domains = set(self.nodes_df[(self.nodes_df['label'] == 0) & (self.nodes_df['label_source'].isin(args.popularity_lists))]['node'])
             popular_ip_index = self.edges_df[(self.edges_df.edge_type == 0) & self.edges_df['domain'].isin(popular_domains)]['target'].values
@@ -141,10 +138,6 @@ class Loader():
             
             mal_nodes = list(set(mal_nodes) - set(balance_indexes))
             ben_nodes = list(set(ben_nodes) - set(balance_indexes))
-            # numpy.random.shuffle(mal_nodes)
-            # numpy.random.shuffle(ben_nodes)
-            # mal_nodes = mal_nodes[:min_count]
-            # ben_nodes = ben_nodes[:min_count]
         
         label_indices = [ben_nodes, mal_nodes]
 
@@ -154,7 +147,6 @@ class Loader():
 
             print(f'Label == {i}:', len(class_index))
             if len(class_index) == 0: continue
-            # numpy.random.seed(seed)
             numpy.random.shuffle(class_index) 
 
             train_mal_count = int(len(class_index) * args.train_percentage)
@@ -196,5 +188,5 @@ class Loader():
         return NeighborLoader(self.data,
             num_neighbors=[each_layer_sampling_size]*self.num_layers,
             batch_size=self.batch_size,
-            input_nodes=initial_nodes, # It should be training and testing nodes
+            input_nodes=initial_nodes, 
             directed=False)

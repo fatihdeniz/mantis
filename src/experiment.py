@@ -1,5 +1,4 @@
 from os import device_encoding
-import sys
 import torch
 import numpy
 import pandas as pd
@@ -146,9 +145,6 @@ class Experiment():
             optimizer.step()
             print(f"Epoch: {epoch:03d} Loss {total_loss} \t Total Correct {total_correct}/{total_test} \t Val {(total_correct/total_test)}")
 
-#             train_acc, val_acc, test_acc = self.__test(model, data)
-#             print(f'Epoch: {epoch:03d}, Loss {loss:.4f}, Train: {train_acc:.4f}, Val: {val_acc:.4f}, '
-#                             f'Test: {test_acc:.4f}')
         return model
 
     def train(self):
@@ -204,19 +200,6 @@ class Experiment():
             prec_recall(pred_raw.cpu(), data_test.y.cpu()[mask])
     
         return score(pred[mask], data_test.y[mask])
-        # try:
-        #     with torch.no_grad():
-        #         LearningCurve.save_prob_result(f'{self.experiment_id}_{self.extra}', 
-        #                                        torch.exp(modelLoaded(data_test.x, data_test.edge_index)), 
-        #                                    data_test.y, 
-        #                                    test_indices, 
-        #                                    [], # domain names are passed, I do not know why 
-        #                                    raw_directory)
-        # except:
-        #     print('Could not generate roc curve!')
-
-        # return self.__test(modelLoaded, data_test, data_test.test_mask)
-#         return self.__test2(modelLoaded, data_test)
         
     @torch.no_grad()
     def __test(self, model, data_test, mask):

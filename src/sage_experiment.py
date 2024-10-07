@@ -6,11 +6,8 @@ from tqdm import tqdm, trange
 from src.score import score, score_batch
 import os.path as osp
 
-
 from gnn.gcn_sage import Gcn
-# from src.labelfeature_experiment import LabelFeature_Experiment
 from src.experiment import Experiment
-
 class SAGE_Experiment(Experiment): 
     def __init__(self, data, args):
         super(SAGE_Experiment, self).__init__(data, args)
@@ -19,19 +16,13 @@ class SAGE_Experiment(Experiment):
         self.args=args
     
     def define_batch(self, initial_nodes):
-        # if self.args.model_type == 'sage':
         if self.args.fanout is not None:
             return NeighborLoader(self.data,
                 num_neighbors=self.args.fanout,
-                # num_neighbors=[-1,25,10],
                 weight_attr= 'edge_weight' if self.args.weighted else None,
                 batch_size=self.batch_size,
-                input_nodes=initial_nodes, # It should be training and testing nodes
+                input_nodes=initial_nodes, 
                 subgraph_type='induced')
-                # directed=False
-                                 
-#         else:
-#             return super().define_batch(initial_nodes)
     
     def __prepare_model(self,data) :
         model = Gcn(num_features=data.num_features, dim=self.dim, 
@@ -88,14 +79,8 @@ class SAGE_Experiment(Experiment):
     
     # @torch.no_grad()
     def __test(self, model, data_test, mask, getloss=False):
-        # try:
-        #     print('Test in SAGE experiment')
-        #     print(self.test_index_tensor)
-        # except:
-        #     print('Exception')
         model.eval()
         test_batches = self.define_batch(self.test_index_tensor)
-        # print('Test batches', test_batches)
         
         with torch.no_grad():
             losses = []
@@ -106,7 +91,6 @@ class SAGE_Experiment(Experiment):
                 pred_raw = model(batch.x, batch.edge_index)
                 c_loss = F.nll_loss(pred_raw[batch.test_mask], batch.y[batch.test_mask]) 
                 losses.append(c_loss)
-                # print('Test in SAGE experiment4')
 
                 combined_pred.append(pred_raw[batch.test_mask])
                 combined_target.append(batch.y[batch.test_mask])
@@ -116,21 +100,10 @@ class SAGE_Experiment(Experiment):
         combined_target = torch.cat(combined_target, dim=0)
 
         if getloss: 
-            total_loss = sum(losses) #/ len(test_batches)
+            total_loss = sum(losses) 
             return total_loss, score(pred, combined_target)['acc']
         return score(pred, combined_target)
     
-#     @torch.no_grad()
-#     def __test(self, model, data_test, mask, getloss=False):
-#         model.eval()
-#         with torch.no_grad():
-#             pred_raw = model(data_test.x, data_test.edge_index)
-#         pred = pred_raw.argmax(dim=1)
-#         if getloss: 
-#             return F.nll_loss(pred_raw[mask], data_test.y[mask]), score(pred[mask], data_test.y[mask])['acc']
-#         return score(pred[mask], data_test.y[mask])
-
-
     def test(self, model_file, data_test, 
             show_curve=False, return_pred=False):
         
@@ -140,9 +113,6 @@ class SAGE_Experiment(Experiment):
     
     
     def predict(self, model_file): 
-        # here train mask is actually domain mask, it is confusing.
-        # Fix it
-        # self.data.domain_mask = torch.ones(len(self.data.x), dtype=bool) 
         initial_nodes = self.data.train_mask.nonzero().t().contiguous()[0]
         self.batch_size = len(initial_nodes)
         test_batches = self.define_batch(initial_nodes)
