@@ -1,7 +1,7 @@
-# Mantis: Detection of Zero-Day Malicious Domains Leveraging Low Reputed Hosting Infrastructure
+This is an official repository for Mantis: Detection of Zero-Day Malicious Domains Leveraging Low Reputed Hosting Infrastructure
 
 ## Overview
-Mantis is a tool designed to detect zero-day malicious domains by leveraging low-reputed hosting infrastructures.  It utilizes a hybrid approach, combining network topology with hosting and lexical feature sets to enhance detection capabilities. By leveraging the power of Graph Neural Networks (GNNs), Mantis identifies malicious domains more effectively, offering a robust solution for proactive cybersecurity.
+Mantis is a tool designed to detect zero-day malicious domains by leveraging low-reputed hosting infrastructures.  It utilizes a hybrid approach, combining network topology with hosting and lexical feature sets to enhance detection capabilities. By leveraging the power of Graph Neural Networks (GNNs), Mantis identifies malicious domains more effectively.
 
 ## Sample Data
 Sample nodes and edges data can be accessed from the following link:
@@ -52,3 +52,6 @@ experiment = sage_experiment.SAGE_Experiment(data_loader.data, args)
 model = experiment.train()
 torch.save(model.state_dict(), model_file)
 ```
+
+### 5. Adversarial Training
+To perform adversarial testing/training, execute the scripts located in the scripts directory.
