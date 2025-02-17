@@ -1,4 +1,4 @@
-This is an official repository for Mantis: Detection of Zero-Day Malicious Domains Leveraging Low Reputed Hosting Infrastructure
+This is an official repository for [Mantis: Detection of Zero-Day Malicious Domains Leveraging Low Reputed Hosting Infrastructure](https://arxiv.org/abs/2502.09788)
 
 ## Overview
 Mantis is a tool designed to detect zero-day malicious domains by leveraging low-reputed hosting infrastructures.  It utilizes a hybrid approach, combining network topology with hosting and lexical feature sets to enhance detection capabilities. By leveraging the power of Graph Neural Networks (GNNs), Mantis identifies malicious domains more effectively.
